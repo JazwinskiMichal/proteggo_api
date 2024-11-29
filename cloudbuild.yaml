@@ -1,0 +1,39 @@
+substitutions:
+  _REGION: europe-central2
+  _PROJECT_ID: flutter-firebase-auth-30475
+  _SERVICE_NAME: proteggo_api
+  _IMAGE_NAME: proteggo_api
+  _IMAGE_TAG: v1.0.131
+
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$_PROJECT_ID/$_IMAGE_NAME:$_IMAGE_TAG', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$_PROJECT_ID/$_IMAGE_NAME:$_IMAGE_TAG']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args: ['container', 'images', 'describe', 'gcr.io/$_PROJECT_ID/$_IMAGE_NAME:$_IMAGE_TAG']
+
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_SERVICE_NAME'
+      - '--image'
+      - 'gcr.io/$_PROJECT_ID/$_IMAGE_NAME:$_IMAGE_TAG'
+      - '--region'
+      - '$_REGION'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--memory'
+      - '1Gi'
+      - '--cpu'
+      - '2'
+      - '--min-instances'
+      - '0'
+      - '--max-instances'
+      - '3'
+images:
+  - 'gcr.io/$_PROJECT_ID/$_IMAGE_NAME:$_IMAGE_TAG'
